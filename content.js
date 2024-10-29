@@ -1,4 +1,5 @@
 const storageKey = 'sfmWhySF';
+const setupDomains = /(lightning\.force\.com\/setup|\.salesforce-setup\.com)/
 let tabRows = [];
 let menuRows = [];
 
@@ -35,7 +36,8 @@ function initTabs(setupTabUl){
 
 
 function delayLoadSetupCog(count) {
-    const setupCogUl = document.querySelectorAll('.uiMenuList div[role="menu"]')[1] 
+    // Ugly selector... not much to work with => <div role="menu" data-aura-rendered-by="175:209;a">
+    const setupCogUl =  document.querySelectorAll('.uiMenuList div[role="menu"]:not(.overflowList, .globalCreateMenuList)')[0];
     count++;
 
     if (count > 5){
@@ -68,6 +70,12 @@ function delayLoadSetupTabs(count) {
 
 initData();
 setTimeout(function() { delayLoadSetupCog(0); }, 3000);
+// Only load tabs if in setup page
+const currentUrl = window.location.href;
+console.log('currentURL', currentUrl);
+if (setupDomains.test(currentUrl)) {
+    setTimeout(function() { delayLoadSetupTabs(0); }, 3000);
+} 
 
 
 function generateRowTemplate(tabTitle, url){
