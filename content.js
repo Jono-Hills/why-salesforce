@@ -1,45 +1,38 @@
 const storageKey = 'sfmWhySF';
+let tabRows = [];
+let menuRows = [];
 
-function init(setupTabUl){
-    if (setupTabUl){
-        let rows = [];
-        browser.storage.sync.get([storageKey], function(items) {
-            let rowObj = items[storageKey];
 
-            if (!rowObj) { //Did not find data inside browser storage
-                rowObj = initTabs();
-            }
+function initData() {
+    const dividerHtml = `<li role="separator" class="slds-has-divider_top-space" data-aura-rendered-by="6165:0"></li>`;
+    menuRows.push(dividerHtml);
+    browser.storage.sync.get([storageKey], function(items) {
+        let tabData = items[storageKey];
 
-            for (const rowId in rowObj) {
-                let row = rowObj[rowId];
-                rows.push(generateRowTemplate(row.tabTitle,row.url))
-            }
-            setupTabUl.insertAdjacentHTML('beforeend', rows.join(''));
-        });
-        
-    }
+        if (!tabData) { //Did not find data inside browser storage
+            tabData = defaultTabs();
+        }
+
+        for (const rowId in tabData) {
+            let row = tabData[rowId];
+            tabRows.push(generateRowTemplate(row.tabTitle, row.url));
+            menuRows.push(generateMenuTemplate(row.tabTitle, row.url));
+        }
+    });
 }
 
 function initCogMenu(setupCogUl){
     if (setupCogUl){
-        const dividerHtml = `<li role="separator" class="slds-has-divider--top-space" data-aura-rendered-by="6165:0"></li>`;
-        let rows = [dividerHtml];
-        browser.storage.sync.get([storageKey], function(items) {
-            let rowObj = items[storageKey];
-
-            if (!rowObj) { //Did not find data inside browser storage
-                rowObj = initTabs();
-            }
-
-            for (const rowId in rowObj) {
-                let row = rowObj[rowId];
-                rows.push(generateMenuTemplate(row.tabTitle,row.url))
-            }
-            setupCogUl.insertAdjacentHTML('beforeend', rows.join(''));
-        });
-        
+        setupCogUl.insertAdjacentHTML('beforeend', menuRows.join(''));
     }
 }
+
+function initTabs(setupTabUl){
+    if (setupTabUl){
+        setupTabUl.insertAdjacentHTML('beforeend', tabRows.join(''));
+    }
+}
+
 
 function delayLoadSetupCog(count) {
     const setupCogUl = document.querySelectorAll('.uiMenuList div[role="menu"]')[1] 
@@ -69,11 +62,11 @@ function delayLoadSetupTabs(count) {
     if (!setupTabUl) {
         setTimeout(function() { delayLoadSetupTabs(0); }, 3000);
     } else {
-        init(setupTabUl);
+        initTabs(setupTabUl);
     }
 }
 
-setTimeout(function() { delayLoadSetupTabs(0); }, 3000);
+initData();
 setTimeout(function() { delayLoadSetupCog(0); }, 3000);
 
 
@@ -104,7 +97,7 @@ function generateMenuTemplate(tabTitle, url){
             </li>`
 }
 
-function initTabs(){
+function defaultTabs(){
     let tabs = [
         {tabTitle : 'Flow', url: '/lightning/setup/Flows/home'},
         {tabTitle : 'User', url: '/lightning/setup/ManageUsers/home'}
