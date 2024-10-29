@@ -20,6 +20,43 @@ function init(setupTabUl){
     }
 }
 
+function initCogMenu(setupCogUl){
+    if (setupCogUl){
+        const dividerHtml = `<li role="separator" class="slds-has-divider--top-space" data-aura-rendered-by="6165:0"></li>`;
+        let rows = [dividerHtml];
+        browser.storage.sync.get([storageKey], function(items) {
+            let rowObj = items[storageKey];
+
+            if (!rowObj) { //Did not find data inside browser storage
+                rowObj = initTabs();
+            }
+
+            for (const rowId in rowObj) {
+                let row = rowObj[rowId];
+                rows.push(generateMenuTemplate(row.tabTitle,row.url))
+            }
+            setupCogUl.insertAdjacentHTML('beforeend', rows.join(''));
+        });
+        
+    }
+}
+
+function delayLoadSetupCog(count) {
+    const setupCogUl = document.querySelectorAll('.uiMenuList div[role="menu"]')[1] 
+    count++;
+
+    if (count > 5){
+        console.log('Why Salesforce - failed to find setup cog.');
+        return;
+    }
+
+    if (!setupCogUl) {
+        setTimeout(function() { delayLoadSetupCog(0); }, 3000);
+    } else {
+        initCogMenu(setupCogUl);
+    }
+}
+
 function delayLoadSetupTabs(count) {
     const setupTabUl  = document.getElementsByClassName("tabBarItems slds-grid")[0];
     count++;
@@ -37,12 +74,32 @@ function delayLoadSetupTabs(count) {
 }
 
 setTimeout(function() { delayLoadSetupTabs(0); }, 3000);
+setTimeout(function() { delayLoadSetupCog(0); }, 3000);
 
 
 function generateRowTemplate(tabTitle, url){
     return `<li role="presentation" style="" class="oneConsoleTabItem tabItem slds-context-bar__item borderRight  navexConsoleTabItem" data-aura-class="navexConsoleTabItem">
                 <a role="tab" tabindex="-1" title="${tabTitle}" aria-selected="false" href="${url}" class="tabHeader slds-context-bar__label-action " >
                     <span class="title slds-truncate" >${tabTitle}</span>
+                </a>
+            </li>`
+}
+
+function generateMenuTemplate(tabTitle, url){
+    return `<li role="presentation" class="slds-dropdown__item uiMenuItem onesetupSetupMenuItem" data-aura-class="uiMenuItem onesetupSetupMenuItem">
+                <a role="menuitem" data-id="sales_setup_home" href="${url}" title="${tabTitle}">
+                    <div class="slds-grid" >
+                        <div class="slds-col slds-size_10-of-12" >
+                            <span class="slds-truncate">
+                                <span class="left-icon setup-icon slds-icon_container slds-m-right_small sales-setup-home-icon">
+                                    <lightning-icon></lightning-icon>
+                                </span>
+                                <span class="slds-align-middle">
+                                    ${tabTitle}
+                                </span>
+                            </span>
+                        </div>
+                    </div>
                 </a>
             </li>`
 }
